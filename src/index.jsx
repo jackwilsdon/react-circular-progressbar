@@ -73,11 +73,26 @@ class CircularProgressbar extends React.Component {
     return 50 - (this.props.strokeWidth / 2) - this.getBackgroundPadding();
   }
 
+  // noreintegrate how to keep this functionality in a backwards compatible manner
+  getText() {
+    if (this.props.text) {
+      return this.props.text;
+    }
+
+    this.props.textForPercentage) {
+
+      const text = textForPercentage ? textForPercentage(percentage) : null;
+      // noreintegrate
+    }
+
+    // default text
+    return `${this.props.percentage}%`;
+  }
+
   render() {
     const { percentage, textForPercentage, className, classes, strokeWidth } = this.props;
     const classForPercentage = this.props.classForPercentage ? this.props.classForPercentage(percentage) : '';
     const pathDescription = this.getPathDescription();
-    const text = textForPercentage ? textForPercentage(percentage) : null;
 
     return (
       <svg
@@ -129,13 +144,14 @@ class CircularProgressbar extends React.Component {
 CircularProgressbar.propTypes = {
   percentage: PropTypes.number.isRequired,
   className: PropTypes.string,
+  classForPercentage: PropTypes.func,  // deprecated in favor of className prop
   classes: PropTypes.objectOf(PropTypes.string),
   strokeWidth: PropTypes.number,
   background: PropTypes.bool,
   backgroundPadding: PropTypes.number,
   initialAnimation: PropTypes.bool,
-  classForPercentage: PropTypes.func,
-  textForPercentage: PropTypes.func,
+  text: PropTypes.string,
+  textForPercentage: PropTypes.func,  // deprecated in favor of text prop
 };
 
 CircularProgressbar.defaultProps = {
