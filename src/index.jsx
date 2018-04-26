@@ -9,9 +9,14 @@ const FULL_RADIUS = 50;
 const CENTER_X = 50;
 const CENTER_Y = 50;
 
+// Keep a global list of deprecations we've already warned the user about.
+const loggedDeprecations = {};
+
 class CircularProgressbar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.validateProps();
 
     this.state = {
       percentage: props.initialAnimation ? 0 : props.percentage,
@@ -31,6 +36,8 @@ class CircularProgressbar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    this.validateProps(nextProps);
+
     this.setState({
       percentage: nextProps.percentage,
     });
@@ -87,6 +94,25 @@ class CircularProgressbar extends React.Component {
     return FULL_RADIUS - (this.props.strokeWidth / 2) - this.getBackgroundPadding();
   }
 
+  validateProps(props = this.props) {
+    if (props.text && props.textForPercentage) {
+      throw new Error('text cannot be used with textForPercentage');
+    }
+
+    if (props.classForPercentage && !loggedDeprecations.classForPercentage) {
+      console.warn('classForPercentage is deprecated and will be removed in the future. Use className instead');
+
+      loggedDeprecations.classForPercentage = true;
+    }
+
+    if (props.textForPercentage && !loggedDeprecations.textForPercentage) {
+      console.warn('textForPercentage is deprecated and will be removed in the future. Use text instead');
+
+      loggedDeprecations.textForPercentage = true;
+    }
+  }
+
+
   render() {
     const {
       percentage,
@@ -95,10 +121,11 @@ class CircularProgressbar extends React.Component {
       classes,
       styles,
       strokeWidth,
+      text,
     } = this.props;
     const classForPercentage = this.props.classForPercentage ? this.props.classForPercentage(percentage) : '';
     const pathDescription = this.getPathDescription();
-    const text = textForPercentage ? textForPercentage(percentage) : null;
+    const textValue = textForPercentage ? textForPercentage(percentage) : text;
 
     return (
       <svg
@@ -134,14 +161,14 @@ class CircularProgressbar extends React.Component {
         />
 
         {
-          text ? (
+          textValue ? (
             <text
               className={classes.text}
               style={styles.text}
               x={CENTER_X}
               y={CENTER_Y}
             >
-              {text}
+              {textValue}
             </text>
           ) : null
         }
@@ -162,6 +189,7 @@ CircularProgressbar.propTypes = {
   counterClockwise: PropTypes.bool,
   classForPercentage: PropTypes.func,
   textForPercentage: PropTypes.func,
+  text: PropTypes.string,
 };
 
 CircularProgressbar.defaultProps = {
@@ -187,6 +215,7 @@ CircularProgressbar.defaultProps = {
   counterClockwise: false,
   classForPercentage: null,
   textForPercentage: (percentage) => `${percentage}%`,
+  text: null,
 };
 
 export default CircularProgressbar;

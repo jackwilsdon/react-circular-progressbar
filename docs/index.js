@@ -6489,6 +6489,9 @@ var FULL_RADIUS = 50;
 var CENTER_X = 50;
 var CENTER_Y = 50;
 
+// Keep a global list of deprecations we've already warned the user about.
+var loggedDeprecations = {};
+
 var CircularProgressbar = function (_React$Component) {
   _inherits(CircularProgressbar, _React$Component);
 
@@ -6496,6 +6499,8 @@ var CircularProgressbar = function (_React$Component) {
     _classCallCheck(this, CircularProgressbar);
 
     var _this = _possibleConstructorReturn(this, (CircularProgressbar.__proto__ || Object.getPrototypeOf(CircularProgressbar)).call(this, props));
+
+    _this.validateProps();
 
     _this.state = {
       percentage: props.initialAnimation ? 0 : props.percentage
@@ -6521,6 +6526,8 @@ var CircularProgressbar = function (_React$Component) {
   }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(nextProps) {
+      this.validateProps(nextProps);
+
       this.setState({
         percentage: nextProps.percentage
       });
@@ -6577,6 +6584,27 @@ var CircularProgressbar = function (_React$Component) {
       return FULL_RADIUS - this.props.strokeWidth / 2 - this.getBackgroundPadding();
     }
   }, {
+    key: 'validateProps',
+    value: function validateProps() {
+      var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.props;
+
+      if (props.text && props.textForPercentage) {
+        throw new Error('text cannot be used with textForPercentage');
+      }
+
+      if (props.classForPercentage && !loggedDeprecations.classForPercentage) {
+        console.warn('classForPercentage is deprecated and will be removed in the future. Use className instead');
+
+        loggedDeprecations.classForPercentage = true;
+      }
+
+      if (props.textForPercentage && !loggedDeprecations.textForPercentage) {
+        console.warn('textForPercentage is deprecated and will be removed in the future. Use text instead');
+
+        loggedDeprecations.textForPercentage = true;
+      }
+    }
+  }, {
     key: 'render',
     value: function render() {
       var _props = this.props,
@@ -6585,11 +6613,12 @@ var CircularProgressbar = function (_React$Component) {
           className = _props.className,
           classes = _props.classes,
           styles = _props.styles,
-          strokeWidth = _props.strokeWidth;
+          strokeWidth = _props.strokeWidth,
+          text = _props.text;
 
       var classForPercentage = this.props.classForPercentage ? this.props.classForPercentage(percentage) : '';
       var pathDescription = this.getPathDescription();
-      var text = textForPercentage ? textForPercentage(percentage) : null;
+      var textValue = textForPercentage ? textForPercentage(percentage) : text;
 
       return _react2.default.createElement(
         'svg',
@@ -6618,7 +6647,7 @@ var CircularProgressbar = function (_React$Component) {
           fillOpacity: 0,
           style: Object.assign({}, styles.path, this.getPathStyles())
         }),
-        text ? _react2.default.createElement(
+        textValue ? _react2.default.createElement(
           'text',
           {
             className: classes.text,
@@ -6626,7 +6655,7 @@ var CircularProgressbar = function (_React$Component) {
             x: CENTER_X,
             y: CENTER_Y
           },
-          text
+          textValue
         ) : null
       );
     }
@@ -6646,7 +6675,8 @@ CircularProgressbar.propTypes = {
   initialAnimation: _propTypes2.default.bool,
   counterClockwise: _propTypes2.default.bool,
   classForPercentage: _propTypes2.default.func,
-  textForPercentage: _propTypes2.default.func
+  textForPercentage: _propTypes2.default.func,
+  text: _propTypes2.default.string
 };
 
 CircularProgressbar.defaultProps = {
@@ -6673,7 +6703,8 @@ CircularProgressbar.defaultProps = {
   classForPercentage: null,
   textForPercentage: function textForPercentage(percentage) {
     return percentage + '%';
-  }
+  },
+  text: null
 };
 
 exports.default = CircularProgressbar;
@@ -10491,7 +10522,7 @@ var Demo = function (_React$Component2) {
         ),
         _react2.default.createElement(
           'div',
-          { className: 'row mt-3' },
+          { className: 'row mt-3 mb-3' },
           _react2.default.createElement(
             'div',
             { className: 'col-xs-6 offset-xs-3 col-md-2 offset-md-5' },
@@ -10583,7 +10614,7 @@ var Demo = function (_React$Component2) {
         _react2.default.createElement('hr', null),
         _react2.default.createElement(
           'div',
-          { className: 'row mt-3 mb-3' },
+          { className: 'mt-3 mb-3' },
           _react2.default.createElement(
             'h2',
             { className: 'text-xs-center' },
@@ -10595,7 +10626,7 @@ var Demo = function (_React$Component2) {
             _react2.default.createElement(
               'p',
               null,
-              'Install with npm:'
+              'Install with yarn or npm:'
             ),
             _react2.default.createElement(
               'p',
@@ -10603,7 +10634,7 @@ var Demo = function (_React$Component2) {
               _react2.default.createElement(
                 'code',
                 null,
-                'npm install ',
+                'yarn add ',
                 "react-circular-progressbar"
               )
             ),
@@ -10611,6 +10642,59 @@ var Demo = function (_React$Component2) {
               'a',
               { className: 'btn btn-info btn-lg', href: githubURL },
               'View docs on Github'
+            )
+          )
+        ),
+        _react2.default.createElement('hr', null),
+        _react2.default.createElement(
+          'div',
+          { className: 'mt-3 mb-3' },
+          _react2.default.createElement(
+            'h2',
+            { className: 'text-xs-center' },
+            'Try it out'
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: 'row mt-3' },
+            _react2.default.createElement(
+              'div',
+              { className: 'col-md-10 offset-md-1' },
+              _react2.default.createElement('iframe', {
+                src: 'https://codesandbox.io/embed/vymm4oln6y',
+                style: {
+                  width: '100%',
+                  height: '500px',
+                  border: 0,
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                },
+                sandbox: 'allow-modals allow-forms allow-popups allow-scripts allow-same-origin'
+              })
+            )
+          )
+        ),
+        _react2.default.createElement('hr', null),
+        _react2.default.createElement(
+          'div',
+          { className: 'my-3' },
+          _react2.default.createElement(
+            'div',
+            { className: 'text-xs-center' },
+            _react2.default.createElement(
+              'a',
+              { className: 'btn btn-info btn-lg', href: githubURL },
+              'View docs on Github'
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: 'mt-3' },
+              'Built by ',
+              _react2.default.createElement(
+                'a',
+                { href: 'http://www.kevinqi.com/' },
+                'Kevin Qi'
+              )
             )
           )
         )
